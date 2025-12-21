@@ -7,7 +7,7 @@ export struct ControlComponent {
   @Link
   item: AquaticTankViewModel;
 
-  @Prop
+  // 回调函数不能使用@Prop装饰器，直接作为普通属性传递
   onControlChange: (controlType: string, value: number) => void = () => {};
 
   build() {
