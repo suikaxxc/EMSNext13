@@ -3,131 +3,133 @@ import EnvironmentViewModel from '../viewmodel/EnvironmentViewModel';
 
 @Component
 export struct SwiperComponent {
-  @State tempArray: number[] = [11, 11, 15, 13, 12, 35, 10];
-  @State humArray: number[] = [51, 41, 45, 68, 60, 50, 40];
-  @State gasArray: number[] = [101, 211, 215, 213, 212, 135, 110];
+  @State waterLevelArray: number[] = [50, 52, 48, 55, 53, 51, 50];
+  @State tempArray: number[] = [24, 25, 24, 26, 25, 24, 25];
+  @State lightArray: number[] = [800, 900, 1000, 850, 920, 880, 900];
 
-  @State tempOption: Options = new Options({
+  @State waterLevelOption: Options = new Options({
     title: {
       show: true,
-      text: '最高气温',
+      text: '水位变化',
       right: 20,
       top: 30
     },
-    color:['#008000'],
+    color: ['#2196F3'],
     xAxis: {
-      data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-    },
-    yAxis: {
-      name: '单位：度'
-    },
-    series: [
-      {
-        name: '最高气温',
-        data: this.tempArray
-      }
-    ]
-  })
-  @State humOption: Options = new Options({
-    title: {
-      show: true,
-      text: '最高湿度',
-      right: 20,
-      top: 30
-    },
-    color:['#008000'],
-    xAxis: {
-      data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+      data: ['1', '2', '3', '4', '5', '6', '7']
     },
     yAxis: {
       name: '单位：%'
     },
     series: [
       {
-        name: '最高湿度',
-        data: this.humArray
+        name: '水位',
+        data: this.waterLevelArray
       }
     ]
   })
-  @State gasOption: Options = new Options({
+  @State tempOption: Options = new Options({
     title: {
       show: true,
-      text: '可燃气体',
+      text: '水温变化',
       right: 20,
       top: 30
     },
-    color:['#008000'],
+    color: ['#FF5722'],
     xAxis: {
-      data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+      data: ['1', '2', '3', '4', '5', '6', '7']
     },
     yAxis: {
-      name: '单位：PPM'
+      name: '单位：℃'
     },
     series: [
       {
-        name: '可燃气体浓度',
-        data: this.gasArray
+        name: '水温',
+        data: this.tempArray
+      }
+    ]
+  })
+  @State lightOption: Options = new Options({
+    title: {
+      show: true,
+      text: '光照强度',
+      right: 20,
+      top: 30
+    },
+    color: ['#FFC107'],
+    xAxis: {
+      data: ['1', '2', '3', '4', '5', '6', '7']
+    },
+    yAxis: {
+      name: '单位：lux'
+    },
+    series: [
+      {
+        name: '光照',
+        data: this.lightArray
       }
     ]
   })
 
   updata(array: number[], value: number) {
-    if(!array)
-      return ;
+    if (!array)
+      return;
     array.push(value)
     if (array.length > 7) {
       array.splice(0, 1)
     }
   }
 
-  upOption(){
+  upOption() {
+    this.waterLevelOption.setVal({
+      series: [
+        {
+          name: '水位',
+          data: this.waterLevelArray
+        }
+      ]
+    })
     this.tempOption.setVal({
       series: [
         {
-          name: '最高气温',
+          name: '水温',
           data: this.tempArray
         }
       ]
     })
-    this.humOption.setVal({
+    this.lightOption.setVal({
       series: [
         {
-          name: '最高湿度',
-          data: this.humArray
-        }
-      ]
-    })
-    this.gasOption.setVal({
-      series: [
-        {
-          name: '可燃气体浓度',
-          data: this.gasArray
+          name: '光照',
+          data: this.lightArray
         }
       ]
     })
   }
+
   @Prop @Watch('onItemUpdated')
   item: EnvironmentViewModel = new EnvironmentViewModel();
+
   onItemUpdated() {
+    this.updata(this.waterLevelArray, this.item.waterLevel)
     this.updata(this.tempArray, this.item.temp)
-    this.updata(this.humArray, this.item.hum)
-    this.updata(this.gasArray, this.item.gas)
+    this.updata(this.lightArray, this.item.light)
     this.upOption();
   }
 
   build() {
     Swiper() {
       McLineChart({
-        options: this.tempOption
+        options: this.waterLevelOption
       })
         .height('30%')
 
       McLineChart({
-        options: this.humOption
+        options: this.tempOption
       }).height('30%')
 
       McLineChart({
-        options: this.gasOption
+        options: this.lightOption
       })
         .height('30%')
     }

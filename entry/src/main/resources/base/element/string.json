@@ -2,15 +2,15 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "module description"
+      "value": "智能水生植物养殖缸系统"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "description"
+      "value": "基于Hi3861的智能水生植物养殖缸"
     },
     {
       "name": "EntryAbility_label",
-      "value": "环境监测"
+      "value": "智能养殖缸"
     }
   ]
 }
