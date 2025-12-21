@@ -5,7 +5,7 @@ import { SettingsComponent } from '../view/SettingsComponent';
 import AquaticTankViewModel from '../viewmodel/AquaticTankViewModel';
 import { MqttMessage } from '@ohos/mqtt';
 import MQTTUtil from '../common/utils/MQTTUtil';
-import { PlantParamsConfig } from '../common/constants/Constant';
+import { PlantParamsConfig, SettingsChangeData, ControlData, MqttReceivedData } from '../common/constants/Constant';
 
 @Entry
 @Component
@@ -26,7 +26,7 @@ struct Index {
       (err: Error, data: MqttMessage) => {
         if (!err && data?.payload) {
           try {
-            const receivedData = JSON.parse(String(data.payload));
+            const receivedData: MqttReceivedData = JSON.parse(String(data.payload)) as MqttReceivedData;
             // 更新传感器数据，保留用户设置
             this.item.waterLevel = receivedData.waterLevel ?? this.item.waterLevel;
             this.item.waterTemp = receivedData.waterTemp ?? this.item.waterTemp;
@@ -70,7 +70,7 @@ struct Index {
 
   handleControlChange(controlType: string, value: number): void {
     // 发送控制指令到Hi3861设备
-    const controlData = {
+    const controlData: ControlData = {
       type: controlType,
       value: value,
       timestamp: Date.now()
@@ -80,7 +80,7 @@ struct Index {
     // this.mqttUtil.publish('aquatic_tank/control', JSON.stringify(controlData));
   }
 
-  handleSettingsChange(settings: object): void {
+  handleSettingsChange(settings: SettingsChangeData): void {
     console.info('设置更新:', JSON.stringify(settings));
     // 实际应用中保存设置并同步到设备
   }
@@ -123,7 +123,7 @@ struct Index {
             TabContent() {
               SettingsComponent({
                 item: $item,
-                onSettingsChange: (settings: object) => this.handleSettingsChange(settings)
+                onSettingsChange: (settings: SettingsChangeData) => this.handleSettingsChange(settings)
               })
             }
             .tabBar(this.TabBuilder(1, "养护设置", $r('app.media.settings')))

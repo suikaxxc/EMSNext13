@@ -138,3 +138,35 @@ export const WEB_BASE_URL = `http://${HOST_IP}:8080/`
 // MQTT主题
 export const MQTT_TOPIC_DATA = 'aquatic_tank/data';
 export const MQTT_TOPIC_CONTROL = 'aquatic_tank/control';
+
+// 设置变更数据接口
+export interface SettingsChangeData {
+  plantTypeIndex?: number;
+  growthStage?: number;
+  waterTempMin?: number;
+  waterTempMax?: number;
+  waterLevelMin?: number;
+  waterLevelMax?: number;
+  lightThreshold?: number;
+  lightDuration?: number;
+}
+
+// 控制指令数据接口
+export interface ControlData {
+  type: string;
+  value: number;
+  timestamp: number;
+}
+
+// MQTT接收数据接口
+export interface MqttReceivedData {
+  waterLevel?: number;
+  waterTemp?: number;
+  lightIntensity?: number;
+  pumpStatus?: number;
+  heaterStatus?: number;
+  fanStatus?: number;
+  ledStatus?: number;
+  alarmStatus?: number;
+  alarmMessage?: string;
+}

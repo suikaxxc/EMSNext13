@@ -2,7 +2,8 @@ import AquaticTankViewModel from "../viewmodel/AquaticTankViewModel";
 import {
   PlantTypeArray,
   GrowthStageArray,
-  PlantParamsConfig
+  PlantParamsConfig,
+  SettingsChangeData
 } from "../common/constants/Constant";
 import { promptAction } from '@kit.ArkUI';
 
@@ -12,7 +13,7 @@ export struct SettingsComponent {
   item: AquaticTankViewModel;
 
   // 回调函数不能使用@Prop装饰器，直接作为普通属性传递
-  onSettingsChange: (settings: object) => void = () => {};
+  onSettingsChange: (settings: SettingsChangeData) => void = () => {};
 
   build() {
     Column() {
@@ -75,7 +76,8 @@ export struct SettingsComponent {
           .layoutWeight(1)
           .onSelect((index: number) => {
             this.item.growthStage = index;
-            this.onSettingsChange({ growthStage: index });
+            const changeData: SettingsChangeData = { growthStage: index };
+            this.onSettingsChange(changeData);
           })
       }
       .width('100%')
@@ -175,7 +177,7 @@ export struct SettingsComponent {
       this.item.lightThreshold = params.lightThreshold;
       this.item.lightDuration = params.lightDuration;
 
-      this.onSettingsChange({
+      const changeData: SettingsChangeData = {
         plantTypeIndex: index,
         waterTempMin: params.waterTempMin,
         waterTempMax: params.waterTempMax,
@@ -183,7 +185,8 @@ export struct SettingsComponent {
         waterLevelMax: params.waterLevelMax,
         lightThreshold: params.lightThreshold,
         lightDuration: params.lightDuration
-      });
+      };
+      this.onSettingsChange(changeData);
     }
   }
 }
