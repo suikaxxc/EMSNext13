@@ -72,8 +72,7 @@ export struct SwiperComponent {
   })
 
   updata(array: number[], value: number) {
-    if (!array)
-      return;
+    if (!array) { return; }
     array.push(value)
     if (array.length > 7) {
       array.splice(0, 1)

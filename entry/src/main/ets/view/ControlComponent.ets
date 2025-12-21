@@ -40,8 +40,9 @@ export struct ControlComponent {
         duration: 1500
       });
     } else {
+      // 发送失败时不更新状态，保持原状态
       promptAction.showToast({
-        message: '指令发送失败，请检查网络',
+        message: '指令发送失败，请检查网络连接',
         duration: 2000
       });
     }

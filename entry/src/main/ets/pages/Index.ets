@@ -13,6 +13,40 @@ struct Index {
   @State item: EnvironmentViewModel = new EnvironmentViewModel();
   @State currentTab: number = 0;
 
+  // 合并接收到的数据与本地状态
+  mergeReceivedData(receivedData: EnvironmentViewModel): void {
+    // 保存需要保留的本地设置
+    const localSettings = {
+      plantType: this.item.plantType,
+      growthStage: this.item.growthStage,
+      mode: this.item.mode,
+      recommendedTempMin: this.item.recommendedTempMin,
+      recommendedTempMax: this.item.recommendedTempMax,
+      recommendedWaterLevelMin: this.item.recommendedWaterLevelMin,
+      recommendedWaterLevelMax: this.item.recommendedWaterLevelMax,
+      recommendedLightIntensity: this.item.recommendedLightIntensity,
+      recommendedLightDuration: this.item.recommendedLightDuration
+    };
+
+    // 更新为接收到的数据
+    this.item = receivedData;
+
+    // 恢复本地设置
+    this.item.plantType = localSettings.plantType;
+    this.item.growthStage = localSettings.growthStage;
+    this.item.recommendedTempMin = localSettings.recommendedTempMin;
+    this.item.recommendedTempMax = localSettings.recommendedTempMax;
+    this.item.recommendedWaterLevelMin = localSettings.recommendedWaterLevelMin;
+    this.item.recommendedWaterLevelMax = localSettings.recommendedWaterLevelMax;
+    this.item.recommendedLightIntensity = localSettings.recommendedLightIntensity;
+    this.item.recommendedLightDuration = localSettings.recommendedLightDuration;
+
+    // 如果设备没有返回模式信息，保留本地模式
+    if (receivedData.mode === undefined) {
+      this.item.mode = localSettings.mode;
+    }
+  }
+
   aboutToAppear(): void {
     MQTTUtil.getInstance().connect(
       (err: Error, data: MqttMessage) => {
@@ -23,31 +57,7 @@ struct Index {
 
           //如果实例不为空就更新状态变量
           if (receivedData) {
-            // 保留本地设置的植物和阶段信息
-            const plantType = this.item.plantType;
-            const growthStage = this.item.growthStage;
-            const mode = this.item.mode;
-            const recommendedTempMin = this.item.recommendedTempMin;
-            const recommendedTempMax = this.item.recommendedTempMax;
-            const recommendedWaterLevelMin = this.item.recommendedWaterLevelMin;
-            const recommendedWaterLevelMax = this.item.recommendedWaterLevelMax;
-            const recommendedLightIntensity = this.item.recommendedLightIntensity;
-            const recommendedLightDuration = this.item.recommendedLightDuration;
-
-            this.item = receivedData;
-            this.item.plantType = plantType;
-            this.item.growthStage = growthStage;
-            // 如果设备没有返回模式信息，保留本地模式
-            if (receivedData.mode === undefined) {
-              this.item.mode = mode;
-            }
-            // 保留推荐参数
-            this.item.recommendedTempMin = recommendedTempMin;
-            this.item.recommendedTempMax = recommendedTempMax;
-            this.item.recommendedWaterLevelMin = recommendedWaterLevelMin;
-            this.item.recommendedWaterLevelMax = recommendedWaterLevelMax;
-            this.item.recommendedLightIntensity = recommendedLightIntensity;
-            this.item.recommendedLightDuration = recommendedLightDuration;
+            this.mergeReceivedData(receivedData);
           }
         }
       }
@@ -96,7 +106,7 @@ struct Index {
         Scroll() {
           Column({ space: 10 }) {
             EnvComponent({ item: this.item })
-            ControlComponent({ item: this.item })
+            ControlComponent({ item: $item })
           }
         }
         .scrollable(ScrollDirection.Vertical)
@@ -105,8 +115,8 @@ struct Index {
         // AI养护页面
         Scroll() {
           Column({ space: 10 }) {
-            PlantSelectionComponent({ item: this.item })
-            AIComponent({ item: this.item })
+            PlantSelectionComponent({ item: $item })
+            AIComponent({ item: $item })
           }
         }
         .scrollable(ScrollDirection.Vertical)
