@@ -1,5 +1,5 @@
 //环境安全级别
-export const StatusArray: string[] = ["安全", "警告", "危险", "未知"];
+export const StatusArray: string[] = ["安全", "注意", "告警", "离线"];
 
 //服务器IP
 const HOST_IP = '192.168.100.77'

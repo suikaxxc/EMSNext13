@@ -1,4 +1,5 @@
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from '@ohos/hypium';
+import EnvironmentViewModel from '../main/ets/viewmodel/EnvironmentViewModel';
 
 export default function localUnitTest() {
   describe('localUnitTest', () => {
@@ -28,6 +29,12 @@ export default function localUnitTest() {
       // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
       expect(a).assertContain(b);
       expect(a).assertEqual(a);
+    });
+    it('environment defaults cover aquatic planter thresholds', 0, () => {
+      let env = new EnvironmentViewModel();
+      expect(env.mode).assertEqual('auto');
+      expect(env.waterHighLimit > env.waterLowLimit).assertTrue();
+      expect(env.lightDurationHours > 0).assertTrue();
     });
   });
 }

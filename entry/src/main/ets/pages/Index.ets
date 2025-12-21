@@ -1,5 +1,6 @@
 import { AIComponent } from '../view/AIComponent';
 import { EnvComponent } from '../view/EnvComponent';
+import { ControlComponent } from '../view/ControlComponent';
 import { SwiperComponent } from '../view/SwiperComponent';
 import EnvironmentViewModel from '../viewmodel/EnvironmentViewModel';
 import { MqttMessage } from '@ohos/mqtt';
@@ -16,12 +17,9 @@ struct Index {
         //如果没有出错就处理数据
         if (!err) {
           //解析接收到的数据为EnvironmentViewModel对象
-          this.item = JSON.parse(String(data.payload)) as EnvironmentViewModel;
-
-          //如果实例不为空就更新状态变量
-          if (!this.item) {
-            this.item = new EnvironmentViewModel()
-          }
+          const next = JSON.parse(String(data.payload)) as EnvironmentViewModel;
+          //确保默认字段齐全，并保留现有状态
+          this.item = Object.assign(new EnvironmentViewModel(), this.item, next);
         }
       }
     )
@@ -29,7 +27,7 @@ struct Index {
 
   build() {
     Column({ space: 10 }) {
-      Text("环境监测系统")
+      Text("智能水生植物养殖缸监测与控制")
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
         .backgroundColor(Color.Green)
@@ -39,8 +37,9 @@ struct Index {
         .textAlign(TextAlign.Center)
 
       EnvComponent({ item: this.item })
+      ControlComponent({ item: $item })
       SwiperComponent({ item: this.item });
-      AIComponent({ item: this.item });
+      AIComponent({ item: $item });
     }
     .height('100%')
     .width('100%')
