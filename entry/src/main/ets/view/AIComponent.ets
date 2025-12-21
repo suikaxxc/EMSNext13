@@ -1,5 +1,5 @@
-import EnvironmentViewModel from "../viewmodel/EnvironmentViewModel";
-
+import AquaticTankViewModel from "../viewmodel/AquaticTankViewModel";
+import { PlantTypeArray, GrowthStageArray } from "../common/constants/Constant";
 import ResultData from '../model/ResultData';
 import HttpUtil from '../common/utils/HttpUtil';
 import { promptAction } from '@kit.ArkUI';
@@ -7,103 +7,143 @@ import { promptAction } from '@kit.ArkUI';
 @Component
 export struct AIComponent {
   @Prop
-  item: EnvironmentViewModel;
+  item: AquaticTankViewModel;
+
   @State
-  resultString: string = '还未对当前环境进行评估'
+  resultString: string = '点击"AI养护建议"获取智能养护策略';
+
   @State
   isBusy: boolean = false;
 
   aiRequest() {
-    //判断是否在请求中
+    // 判断是否在请求中
     if (this.isBusy) {
       promptAction.showToast({
-        message: 'AI 大模型评估中。。。',
+        message: 'AI智能分析中...',
         duration: 2000
       });
       return;
     }
 
-    //判断当前数据是否有效
+    // 判断当前数据是否有效
     if (!this.item) {
       promptAction.showToast({
-        message: '评估数据无效',
+        message: '设备数据无效，请检查连接',
         duration: 2000
       });
       return;
     }
 
-    //设置请求参数
-    let parm =
-      `当前环境是否适合农作为生长？内容为120字左右，当前环境为，温度:${this.item.temp}度，湿度:${this.item.hum}%，可燃气体:${this.item.gas}ppm`
+    // 获取当前植物和生长阶段信息
+    const plantName = PlantTypeArray[this.item.plantTypeIndex] || "未知植物";
+    const growthStage = GrowthStageArray[this.item.growthStage] || "未知阶段";
 
-    //改变状态
+    // 构建AI请求参数
+    const prompt = `请针对水生植物"${plantName}"在"${growthStage}"提供养护建议。
+当前环境参数：水温${this.item.waterTemp}°C，水位${this.item.waterLevel}%，光照${this.item.lightIntensity}lux。
+目标参数：水温${this.item.waterTempMin}-${this.item.waterTempMax}°C，水位${this.item.waterLevelMin}-${this.item.waterLevelMax}%，光照阈值${this.item.lightThreshold}lux。
+请分析当前环境是否适合该植物生长，并给出具体的调整建议和养护注意事项，内容控制在150字以内。`;
+
+    // 改变状态
     this.isBusy = true;
 
-    //AI分析请求
-    HttpUtil.post<ResultData, string>('ai/analysis', parm)
+    // AI分析请求
+    HttpUtil.post<ResultData, string>('ai/analysis', prompt)
       .then((data: ResultData) => {
-        //成功后处理数据
+        // 成功后处理数据
         if (data?.success) {
           this.resultString = `${data.data}`;
+        } else {
+          this.resultString = '获取AI建议失败，请稍后重试';
         }
       })
-      .finally(() => {
-        //最后更新状态
-        this.isBusy = false
+      .catch(() => {
+        this.resultString = '网络请求失败，请检查网络连接';
       })
+      .finally(() => {
+        // 最后更新状态
+        this.isBusy = false;
+      });
   }
 
   build() {
     Column() {
+      // 标题栏
       Row() {
-        Image($r('app.media.ai_green_128'))
-          .width(40)
-          .height(40)
+        Row() {
+          Image($r('app.media.ai'))
+            .width(28)
+            .height(28)
+          Text("AI智能养护")
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#333333')
+            .margin({ left: 8 })
+        }
+
+        Blank()
 
         if (this.isBusy) {
           Row() {
             LoadingProgress()
-              .width(40)
-              .height(40)
-              .color(Color.Green)
-            Text('AI评估中。。。')
-              .fontColor(Color.Green)
+              .width(24)
+              .height(24)
+              .color('#4CAF50')
+            Text('分析中...')
+              .fontSize(12)
+              .fontColor('#4CAF50')
+              .margin({ left: 4 })
           }
+        } else {
+          Button('AI养护建议')
+            .fontSize(13)
+            .fontColor(Color.White)
+            .backgroundColor('#4CAF50')
+            .height(32)
+            .borderRadius(16)
+            .onClick(() => {
+              this.aiRequest();
+            })
         }
+      }
+      .width('100%')
+      .margin({ bottom: 12 })
 
-        Button('AI评估')
-          .fontSize(16)
-          .fontWeight(600)
-          .height(34)
-          .backgroundColor(Color.Green)
-          .enabled(!this.isBusy)
-          .onClick(() => {
-            this.aiRequest();
-          })
-      }.width('100%')
-      .justifyContent(FlexAlign.SpaceBetween)
+      // 当前养护植物信息
+      Row() {
+        Text(`当前植物：${PlantTypeArray[this.item.plantTypeIndex]}`)
+          .fontSize(12)
+          .fontColor('#666666')
+        Blank()
+        Text(`生长阶段：${GrowthStageArray[this.item.growthStage]}`)
+          .fontSize(12)
+          .fontColor('#666666')
+      }
+      .width('100%')
+      .padding(8)
+      .backgroundColor('#E8F5E9')
+      .borderRadius(6)
+      .margin({ bottom: 8 })
 
+      // AI建议内容
       Scroll() {
         Text(this.resultString)
-          .lineHeight(30)
-          .fontSize(16)
+          .fontSize(14)
+          .lineHeight(22)
+          .fontColor('#333333')
           .width('100%')
       }
-      .height('82%')
-      .margin({ top: 10 })
-      .padding(5)
-      .borderColor($r('app.color.green_128'))
-      .borderWidth(1)
-      .borderRadius(10)
-
-      Blank()
+      .layoutWeight(1)
+      .padding(12)
+      .backgroundColor('#FAFAFA')
+      .borderRadius(8)
+      .scrollBar(BarState.Auto)
     }
-    .alignItems(HorizontalAlign.End)
-    .padding(10)
+    .padding(12)
     .width('94%')
-    .height('36%')
-    .borderRadius(10)
+    .height(220)
+    .borderRadius(12)
     .backgroundColor(Color.White)
-    .margin({ left: 10, right: 10 })
+    .margin({ left: '3%', right: '3%' })
   }
 }
