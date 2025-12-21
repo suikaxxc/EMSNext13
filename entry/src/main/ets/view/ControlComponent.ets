@@ -10,7 +10,12 @@ export struct ControlComponent {
   @State busyAction: string = '';
 
   private updateItem(partial: Partial<EnvironmentViewModel>) {
-    this.item = Object.assign(this.item, partial);
+    if (!partial) {
+      return;
+    }
+    for (let key in partial) {
+      (this.item as Record<string, unknown>)[key] = (partial as Record<string, unknown>)[key];
+    }
   }
 
   private sendControl(action: string, value: string | boolean): Promise<boolean> {

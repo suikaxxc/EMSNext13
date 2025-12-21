@@ -19,10 +19,38 @@ struct Index {
           //解析接收到的数据为EnvironmentViewModel对象
           const next = JSON.parse(String(data.payload)) as EnvironmentViewModel;
           //确保默认字段齐全，并保留现有状态
-          this.item = Object.assign(new EnvironmentViewModel(), this.item, next);
+          this.mergeItem(next);
         }
       }
     )
+  }
+
+  private mergeItem(next: EnvironmentViewModel | null) {
+    if (!next) {
+      return;
+    }
+    const target = this.item || new EnvironmentViewModel();
+    target.stat = next.stat ?? target.stat;
+    target.temp = next.temp ?? target.temp;
+    target.hum = next.hum ?? target.hum;
+    target.gas = next.gas ?? target.gas;
+    target.wifiConnected = next.wifiConnected ?? target.wifiConnected;
+    target.wifiSsid = next.wifiSsid ?? target.wifiSsid;
+    target.mode = next.mode ?? target.mode;
+    target.pumpOn = next.pumpOn ?? target.pumpOn;
+    target.heaterOn = next.heaterOn ?? target.heaterOn;
+    target.coolerOn = next.coolerOn ?? target.coolerOn;
+    target.ledOn = next.ledOn ?? target.ledOn;
+    target.alarmMessage = next.alarmMessage ?? target.alarmMessage;
+    target.plant = next.plant ?? target.plant;
+    target.stage = next.stage ?? target.stage;
+    target.waterLowLimit = next.waterLowLimit ?? target.waterLowLimit;
+    target.waterHighLimit = next.waterHighLimit ?? target.waterHighLimit;
+    target.tempMin = next.tempMin ?? target.tempMin;
+    target.tempMax = next.tempMax ?? target.tempMax;
+    target.lightLuxTarget = next.lightLuxTarget ?? target.lightLuxTarget;
+    target.lightDurationHours = next.lightDurationHours ?? target.lightDurationHours;
+    this.item = target;
   }
 
   build() {
