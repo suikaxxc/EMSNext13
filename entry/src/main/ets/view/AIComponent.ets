@@ -14,12 +14,26 @@ interface StrategyData {
   suggestion: string;
 }
 
-const PLANT_CONFIGS: Record<string, { light: number, temp: number }> = {
+interface PlantConfig {
+  light: number;
+  temp: number;
+}
+
+interface StrategyRequest {
+  plant: string;
+  stage: string;
+  waterTemp: number;
+  waterLevel: number;
+  lightLux: number;
+}
+
+const PLANT_CONFIGS: Record<string, PlantConfig> = {
   '绿萝': { light: 700, temp: 23 },
   '睡莲': { light: 900, temp: 24 },
   '水培薄荷': { light: 800, temp: 25 },
   '水竹': { light: 600, temp: 22 }
 };
+const DEFAULT_PLANT_CONFIG: PlantConfig = { light: 800, temp: 24 };
 
 @Component
 export struct AIComponent {
@@ -54,7 +68,7 @@ export struct AIComponent {
     }
 
     //设置请求参数
-    let parm = {
+    const parm: StrategyRequest = {
       plant: this.plantOptions[this.plantIndex],
       stage: this.stageOptions[this.stageIndex],
       waterTemp: this.item.temp,
@@ -66,7 +80,7 @@ export struct AIComponent {
     this.isBusy = true;
 
     //AI策略请求
-    HttpUtil.post<ResultData, object>('ai/strategy', parm)
+    HttpUtil.post<ResultData, StrategyRequest>('ai/strategy', parm)
       .then((data: ResultData) => {
         //成功后处理数据
         if (data?.success && data.data) {
@@ -98,7 +112,7 @@ export struct AIComponent {
 
   private buildLocalStrategy(): StrategyData {
     const plantName = this.plantOptions[this.plantIndex] || '通用水培植物';
-    const config = PLANT_CONFIGS[plantName] || { light: 800, temp: 24 };
+    const config: PlantConfig = PLANT_CONFIGS[plantName] ?? DEFAULT_PLANT_CONFIG;
     const baseLight = config.light;
     const baseTemp = config.temp;
     const stageOffset = this.stageIndex === 0 ? -1 : (this.stageIndex === 2 ? 1 : 0);

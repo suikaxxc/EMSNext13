@@ -3,6 +3,12 @@ import ResultData from "../model/ResultData";
 import HttpUtil from "../common/utils/HttpUtil";
 import { promptAction } from '@kit.ArkUI';
 
+interface ControlCommand {
+  action: string;
+  value: string | boolean;
+  mode: string;
+}
+
 @Component
 export struct ControlComponent {
   @Link
@@ -20,18 +26,19 @@ export struct ControlComponent {
 
   private sendControl(action: string, value: string | boolean): Promise<boolean> {
     this.busyAction = action;
-    return HttpUtil.post<ResultData, object>('control/command', {
+    const payload: ControlCommand = {
       action: action,
       value: value,
       mode: this.item.mode
-    }).then((data: ResultData) => {
+    };
+    return HttpUtil.post<ResultData, ControlCommand>('control/command', payload).then((data: ResultData) => {
       promptAction.showToast({
         message: data?.message || '指令已发送',
         duration: 2000
       });
       return true;
-    }).catch((err: unknown) => {
-      const message = typeof err === 'object' && err !== null && 'message' in err ? (err as { message?: string }).message : '';
+    }).catch((err: Error | string | undefined) => {
+      const message = typeof err === 'string' ? err : err?.message;
       promptAction.showToast({
         message: `指令未确认：${message || '网络不可用'}`,
         duration: 2000
@@ -56,8 +63,9 @@ export struct ControlComponent {
   }
 
   private toggleHeater(isOn: boolean) {
-    const previous = { heaterOn: this.item.heaterOn, coolerOn: this.item.coolerOn };
-    this.updateItem({ heaterOn: isOn, coolerOn: false });
+    const previous: Partial<EnvironmentViewModel> = { heaterOn: this.item.heaterOn, coolerOn: this.item.coolerOn };
+    const nextState: Partial<EnvironmentViewModel> = { heaterOn: isOn, coolerOn: false };
+    this.updateItem(nextState);
     this.sendControl('heaterOn', isOn).then((ok: boolean) => {
       if (!ok) {
         this.updateItem(previous);
@@ -68,8 +76,9 @@ export struct ControlComponent {
   }
 
   private toggleCooler(isOn: boolean) {
-    const previous = { heaterOn: this.item.heaterOn, coolerOn: this.item.coolerOn };
-    this.updateItem({ heaterOn: false, coolerOn: isOn });
+    const previous: Partial<EnvironmentViewModel> = { heaterOn: this.item.heaterOn, coolerOn: this.item.coolerOn };
+    const nextState: Partial<EnvironmentViewModel> = { heaterOn: false, coolerOn: isOn };
+    this.updateItem(nextState);
     this.sendControl('coolerOn', isOn).then((ok: boolean) => {
       if (!ok) {
         this.updateItem(previous);
